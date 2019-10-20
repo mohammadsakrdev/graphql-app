@@ -1,9 +1,15 @@
 import { GraphQLServer } from 'graphql-yoga';
 
+const users = [
+  { id: '12qw', name: 'Mohammad', mail: 'mail@yahoo.com', age: 12 },
+  { id: '12qwwe', name: 'Mohammad1', mail: 'mail1@yahoo.com', age: 15 },
+  { id: '12qwwye', name: 'Mohammad2', mail: 'mail11@yahoo.com', age: 25 }
+];
+
 // Type definitions
 const typeDefs = `
   type Query {
-    users: [User!]!
+    users(query: String): [User!]!
     greeting(name: String, position: String): String!
     add(numbers: [Float!]!): Float!
     me: User!
@@ -22,10 +28,7 @@ const typeDefs = `
 const resolvers = {
   Query: {
     users(parents, args, ctx, info) {
-      return [
-        { id: '12qw', name: 'Mohammad', mail: 'mail@yahoo.com', age: 12 },
-        { id: '12qwwe', name: 'Mohammad 1', mail: 'mail1@yahoo.com', age: 13 }
-      ];
+      return users;
     },
     add(parents, args, ctx, info) {
       if (args.numbers.length === 0) {
