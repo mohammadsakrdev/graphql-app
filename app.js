@@ -1,4 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga';
+import uuidv4 from 'uuid/v4';
 
 const users = [
   { id: '1', name: 'Mohammad', mail: 'mail@yahoo.com', age: 12 },
@@ -67,6 +68,31 @@ const typeDefs = `
     add(numbers: [Float!]!): Float!
     me: User!
     grades: [Int!]!
+  }
+
+  type Mutation {
+    createUser(data: CreateUserInput!): User!
+    createPost(data: CreatePostInput!): Post!
+    createComment(data: CreateCommentInput!): Comment!
+  }
+
+  input CreateUserInput {
+    name: String!
+    mail: String!
+    age: Int
+  }
+
+  input CreatePostInput {
+    title: String!
+    body: String!
+    published: Boolean!
+    author: ID!
+  }
+
+  input CreateCommentInput {
+    text: String!
+    author: ID!
+    post: ID!
   }
 
   type User {
@@ -142,6 +168,53 @@ const resolvers = {
     },
     grades(parent, args, ctx, info) {
       return [12, 15, 23];
+    }
+  },
+  Mutation: {
+    createUser(parent, args, ctx, info) {
+      const emailTaken = users.some(user => user.mail === args.data.mail);
+      if (emailTaken) {
+        throw new Error('Mail is used before');
+      }
+
+      const user = {
+        id: uuidv4(),
+        ...args.data
+      };
+
+      users.push(user);
+      return user;
+    },
+    createPost(parent, args, ctx, info) {
+      const userExists = users.some(user => user.id === args.data.author);
+      if (!userExists) {
+        throw new Error('Author not found in users');
+      }
+      const post = {
+        id: uuidv4(),
+        ...args.data
+      };
+      posts.push(post);
+      return post;
+    },
+    createComment(parent, args, ctx, info) {
+      const userExists = users.some(user => user.id === args.data.author);
+      if (!userExists) {
+        throw new Error('Author not found in users');
+      }
+
+      const postExists = posts.some(post => post.id === args.data.post);
+      if (!postExists) {
+        throw new Error('Post not found in [posts]');
+      }
+
+      const comment = {
+        id: uuidv4(),
+        ...args.data
+      };
+
+      comments.push(comment);
+      return comment;
     }
   },
   Post: {
